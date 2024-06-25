@@ -11,6 +11,7 @@ type Storage interface {
 	CreateAccount(*Account) error
 	DeleteAccount(int) error
 	UpdateAccount(*Account) error
+	GetAccounts() ([]*Account, error)
 	GetAccountById(int) (*Account, error)
 }
 
@@ -35,8 +36,17 @@ func NewPostgresStore() (*PostgresStore, error) {
 }
 
 func (s *PostgresStore) Init() error {
+	// return s.dropAccountTable()
 	return s.createAccountTable()
 }
+
+// USE WHEN ADDING NEW FIELDS TO TABLE
+// func (s *PostgresStore) dropAccountTable() error {
+// 	query := "DROP TABLE account"
+
+// 	_, err := s.db.Exec(query)
+// 	return err
+// }
 
 func (s *PostgresStore) createAccountTable() error {
 	query := `CREATE TABLE IF NOT EXISTS account (
@@ -76,4 +86,30 @@ func (s *PostgresStore) DeleteAccount(id int) error {
 
 func (s *PostgresStore) GetAccountById(id int) (*Account, error) {
 	return nil, nil
+}
+
+func (s *PostgresStore) GetAccounts() ([]*Account, error) {
+	rows, err := s.db.Query("SELECT * FROM account")
+	if err != nil {
+		return nil, err
+	}
+
+	accounts := []*Account{}
+
+	for rows.Next() {
+		account := new(Account)
+		if err := rows.Scan(
+			&account.Id,
+			&account.FirstName,
+			&account.LastName,
+			&account.Number,
+			&account.Balance,
+			&account.CreatedAt); err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
 }
