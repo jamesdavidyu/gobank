@@ -3,8 +3,9 @@ package main
 import (
 	"time"
 
+	"math/rand"
+
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/exp/rand"
 )
 
 type LoginResponse struct {
